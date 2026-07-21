@@ -1,5 +1,5 @@
 const Transaction = require("../models/Transactions");
-const { parseSmsWithGemini } = require("../services/geminiService");
+const { parseSmsStatic } = require("../services/parserService"); // Static parser import
 
 const receiveSms = async (req, res) => {
     try {
@@ -13,7 +13,7 @@ const receiveSms = async (req, res) => {
             });
         }
 
-        // 2. Safety Filter: Catch OTPs & Security terms
+        // 2. Local Safety Filter (OTP check)
         const sensitivePatterns = [
             /\botp\b/i,
             /one time password/i,
@@ -32,22 +32,22 @@ const receiveSms = async (req, res) => {
             });
         }
 
-        // 3. Authenticated User attached by auth middleware
+        // 3. User attached by auth middleware
         const user = req.user;
 
-        // 4. Parse SMS using Gemini AI
-        const parsedFinancials = await parseSmsWithGemini(messageBody);
+        // 4. Parse SMS using Static Regex Logic (Instant execution, zero latency)
+        const parsedFinancials = parseSmsStatic(messageBody);
 
-        // If Gemini could not extract a valid amount (> 0), don't log as transaction
+        // Skip saving if no valid debit/spend amount was parsed
         if (!parsedFinancials || parsedFinancials.amount <= 0) {
             return res.status(200).json({
                 success: true,
-                message: "SMS analyzed but no valid debit transaction detected.",
+                message: "SMS analyzed statically but no valid spend amount detected.",
                 data: parsedFinancials
             });
         }
 
-        // 5. Save to Database
+        // 5. Save directly to MongoDB
         const transaction = await Transaction.create({
             userID: user._id,
             rawSmsText: messageBody,
@@ -59,7 +59,7 @@ const receiveSms = async (req, res) => {
 
         return res.status(201).json({
             success: true,
-            message: "Transaction parsed and logged successfully.",
+            message: "Transaction parsed via static logic and saved.",
             data: transaction,
         });
     } catch (error) {
