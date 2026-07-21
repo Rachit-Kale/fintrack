@@ -1,15 +1,17 @@
 const express = require("express");
-
 const router = express.Router();
 
-router
-// Placeholders ONLY with Temporary FUNCTION
-.get("/webhook/sms", (req,res) => {
-    return res.status(200).json({test: "Testing Server-GET", status: "Webhook Endpoint placeholder"})
-})
-.post("/transactions", (req,res) => {
-    return res.status(200).json({test: "Testing Server-POST", status: "Transaction Endpoint placeholder"})
-})
+const protectDevice = require("../middleware/auth");
+const { receiveSms } = require("../controllers/webhookController");
+const { getTransactions, getMicroDrainStats } = require("../controllers/analyticsController");
 
+// 1. Webhook endpoint (SMS Ingestion)
+router.post("/webhook/sms", protectDevice, receiveSms);
+
+// 2. Transaction Feed
+router.get("/transactions", protectDevice, getTransactions);
+
+// 3. Analytics & Micro-drain Widget Data
+router.get("/analytics/micro-drain", protectDevice, getMicroDrainStats);
 
 module.exports = router;
