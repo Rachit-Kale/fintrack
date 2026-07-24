@@ -5,7 +5,7 @@ const receiveSms = async (req, res) => {
     try {
         const { senderId, messageBody } = req.body;
 
-        // 1. Basic Payload Validation
+        
         if (!messageBody || typeof messageBody !== "string" || messageBody.trim() === "") {
             return res.status(400).json({
                 success: false,
@@ -13,7 +13,7 @@ const receiveSms = async (req, res) => {
             });
         }
 
-        // 2. Local Safety Filter (OTP check)
+        
         const sensitivePatterns = [
             /\botp\b/i,
             /one time password/i,
@@ -32,13 +32,13 @@ const receiveSms = async (req, res) => {
             });
         }
 
-        // 3. User attached by auth middleware
+        
         const user = req.user;
 
-        // 4. Parse SMS using Static Regex Logic (Instant execution, zero latency)
+        
         const parsedFinancials = parseSmsStatic(messageBody);
 
-        // Skip saving if no valid debit/spend amount was parsed
+        
         if (!parsedFinancials || parsedFinancials.amount <= 0) {
             return res.status(200).json({
                 success: true,
@@ -47,7 +47,7 @@ const receiveSms = async (req, res) => {
             });
         }
 
-        // 5. Save directly to MongoDB
+        
         const transaction = await Transaction.create({
             userID: user._id,
             rawSmsText: messageBody,
