@@ -17,6 +17,12 @@ apiClient.interceptors.request.use((config) => {
     return config;
 });
 
+// Added Login API helper
+export const loginUser = async (email, password) => {
+    const response = await apiClient.post('/auth/login', { email, password });
+    return response.data;
+};
+
 export const getTransactions = async () => {
     const response = await apiClient.get('/transactions');
     return response.data.data || [];
