@@ -31,7 +31,7 @@ const transactionSchema = new mongoose.Schema(
         }
     },
     {
-        trasactionTimestamp: {
+        transactionTimestamp: {
             type: Date,
             default: Date.now
         }
